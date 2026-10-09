@@ -427,9 +427,11 @@ function queryActive() {
   fetch(SAVE_API + '?action=query', { method:'GET', mode:'cors', cache:'no-store' })
     .then(r => r.json())
     .then(d => {
-      if (d.success && d.longitude && d.latitude) {
-        activeLon = parseFloat(d.longitude);
-        activeLat = parseFloat(d.latitude);
+      const parsedLon = Number(d.longitude);
+      const parsedLat = Number(d.latitude);
+      if (d.success && Number.isFinite(parsedLon) && Number.isFinite(parsedLat)) {
+        activeLon = parsedLon;
+        activeLat = parsedLat;
         activeAcc = d.accuracy || null;
         activeStatus = 'ok';
       } else {
@@ -465,7 +467,8 @@ async function save() {
   btn.textContent = t('saving'); btn.disabled = true;
   showError(false);
   try {
-    const r = await fetch(SAVE_API + '?lon=' + lon + '&lat=' + lat + '&acc=25', {
+    const params = new URLSearchParams({ lon: String(lon), lat: String(lat), acc: '25' });
+    const r = await fetch(SAVE_API + '?' + params.toString(), {
       method: 'GET', mode: 'cors', cache: 'no-store'
     });
     const d = await r.json();
